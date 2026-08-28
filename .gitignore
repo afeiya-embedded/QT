@@ -1,0 +1,20 @@
+# VS 缓存和临时文件
+.vs/
+*.ipch
+
+# Qt 构建目录和编译产物
+build*/
+*_MinGW/
+*_MSVC/
+*_install/
+*.o
+*.obj
+*.exe
+*.dll
+*.lib
+
+# Qt 自动生成文件
+moc_*.cpp
+ui_*.h
+qrc_*.cpp
+*.pro.user*
