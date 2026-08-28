@@ -1,0 +1,7 @@
+﻿   Qt/MSBuild: 3.5.0.0
+  Reading Qt configuration (E:/Qt/5.15.2/5.15.2/msvc2019_64/bin/qmake)
+   Qt: 5.15.2
+  main.cpp
+  widget.cpp
+  moc_widget.cpp
+  01-helloworld.vcxproj -> E:\Embedded Series\QT\QT\01-helloworld\debug\01-helloworld.exe
