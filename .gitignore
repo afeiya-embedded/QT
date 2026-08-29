@@ -1,20 +1,58 @@
-# VS 缓存和临时文件
-.vs/
-*.ipch
-
-# Qt 构建目录和编译产物
+# Qt 编译/构建产物目录
 build*/
-*_MinGW/
-*_MSVC/
-*_install/
-*.o
-*.obj
+release/
+debug/
+*MSVC*/
+*MinGW*/
+
+# 编译生成文件
 *.exe
 *.dll
 *.lib
+*.obj
+*.o
 
 # Qt 自动生成文件
 moc_*.cpp
 ui_*.h
 qrc_*.cpp
+
+# Qt Creator 本地用户配置
+*.pro.user
+*.pro.user.*
+*.autosave
+
+# 系统临时文件
+Thumbs.db
+.DS_Store
+
+### Qt 编译产物 ###
+build*/
+debug/
+release/
+*.exe
+*.dll
+*.o
+*.obj
+*.pch
+moc_*.cpp
+ui_*.h
+qrc_*.cpp
+.qmake.stash
+qtvars.*
+qt_work.log
+
+### Qt Creator 用户配置 ###
 *.pro.user*
+*.autosave
+
+### Visual Studio 编译产物 ###
+.vs/
+*.ipch
+*.pdb
+*.ilk
+*.idb
+*.sln
+*.suo
+*.vcxproj
+*.user

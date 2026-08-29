@@ -15,13 +15,13 @@ SetCompressor lzma
 
 ; MUI 预定义常量
 !define MUI_ABORTWARNING
-!define MUI_ICON "..\01-helloworld_MinGW\setup.ico"
+!define MUI_ICON "${NSISDIR}\Contrib\Graphics\Icons\modern-install.ico"
 !define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\modern-uninstall.ico"
 
 ; 欢迎页面
 !insertmacro MUI_PAGE_WELCOME
 ; 许可协议页面
-!insertmacro MUI_PAGE_LICENSE "..\02-PictureToIcon_MSVC\COPYING"
+!insertmacro MUI_PAGE_LICENSE "..\02-PictureToIcon_MSVC\license.txt"
 ; 安装目录选择页面
 !insertmacro MUI_PAGE_DIRECTORY
 ; 安装过程页面
@@ -51,11 +51,10 @@ BrandingText " "
 Section "MainSection" SEC01
   SetOutPath "$INSTDIR"
   SetOverwrite ifnewer
-  File "..\02-PictureToIcon_MSVC\COPYING"
+  File "..\02-PictureToIcon_MSVC\D3Dcompiler_47.dll"
   CreateDirectory "$SMPROGRAMS\PictureToIcon"
   CreateShortCut "$SMPROGRAMS\PictureToIcon\PictureToIcon.lnk" "$INSTDIR\PictureToIcon.exe"
   CreateShortCut "$DESKTOP\PictureToIcon.lnk" "$INSTDIR\PictureToIcon.exe"
-  File "..\02-PictureToIcon_MSVC\D3Dcompiler_47.dll"
   SetOutPath "$INSTDIR\iconengines"
   File "..\02-PictureToIcon_MSVC\iconengines\qsvgicon.dll"
   SetOutPath "$INSTDIR\imageformats"
@@ -70,10 +69,8 @@ Section "MainSection" SEC01
   File "..\02-PictureToIcon_MSVC\imageformats\qwebp.dll"
   SetOutPath "$INSTDIR"
   File "..\02-PictureToIcon_MSVC\libEGL.dll"
-  File "..\02-PictureToIcon_MSVC\libgcc_s_seh-1.dll"
   File "..\02-PictureToIcon_MSVC\libGLESv2.dll"
-  File "..\02-PictureToIcon_MSVC\libstdc++-6.dll"
-  File "..\02-PictureToIcon_MSVC\libwinpthread-1.dll"
+  File "..\02-PictureToIcon_MSVC\license.txt"
   File "..\02-PictureToIcon_MSVC\opengl32sw.dll"
   File "..\02-PictureToIcon_MSVC\PictureToIcon.exe"
   SetOutPath "$INSTDIR\platforms"
@@ -165,10 +162,8 @@ Section Uninstall
   Delete "$INSTDIR\platforms\qwindows.dll"
   Delete "$INSTDIR\PictureToIcon.exe"
   Delete "$INSTDIR\opengl32sw.dll"
-  Delete "$INSTDIR\libwinpthread-1.dll"
-  Delete "$INSTDIR\libstdc++-6.dll"
+  Delete "$INSTDIR\license.txt"
   Delete "$INSTDIR\libGLESv2.dll"
-  Delete "$INSTDIR\libgcc_s_seh-1.dll"
   Delete "$INSTDIR\libEGL.dll"
   Delete "$INSTDIR\imageformats\qwebp.dll"
   Delete "$INSTDIR\imageformats\qwbmp.dll"
@@ -181,7 +176,6 @@ Section Uninstall
   Delete "$INSTDIR\imageformats\qgif.dll"
   Delete "$INSTDIR\iconengines\qsvgicon.dll"
   Delete "$INSTDIR\D3Dcompiler_47.dll"
-  Delete "$INSTDIR\COPYING"
 
   Delete "$SMPROGRAMS\PictureToIcon\Uninstall.lnk"
   Delete "$DESKTOP\PictureToIcon.lnk"
