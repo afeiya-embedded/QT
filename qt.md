@@ -27,18 +27,23 @@
 RC_ICONS = images/logo.ico
 ```
 
-
-
-### 图片转换工具
-
-#### 启用高DPI缩放
-##### 这个函数是用来启用高DPI缩放的。当应用程序在高分辨率的显示设备上运行时， Qt会自动根据系统的DPI设置来缩放界面元素，使得界面在不同分辨率的显示器上具有合适的大小和清晰度。此属性应在创建QApplication对象之前设置
+### 启用高DPI缩放
+#### 这个函数是用来启用高DPI缩放的。当应用程序在高分辨率的显示设备上运行时， Qt会自动根据系统的DPI设置来缩放界面元素，使得界面在不同分辨率的显示器上具有合适的大小和清晰度。此属性应在创建QApplication对象之前设置
 ```c
 // 启用高DPI缩放
 #if (QT_VERSION >= QT_VERSION_CHECK(5,6,0))
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 #endif
 ```
+
+### 应用程序
+```c
+#include <QStyleFactory>
+
+a.setStyle(QStyleFactory::create("fusion")); // fusion 这个主题比较好看
+```
+
+### 图片转换工具
 
 #### QT关键explicit的理解
 ```c
