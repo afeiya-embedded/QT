@@ -36,14 +36,25 @@ RC_ICONS = images/logo.ico
 #endif
 ```
 
-### 应用程序
+### 应用程序风格样式
 ```c
 #include <QStyleFactory>
 
 a.setStyle(QStyleFactory::create("fusion")); // fusion 这个主题比较好看
 ```
 
-### 图片转换工具
+### 编码转换
+```c
+//*.pro
+
+msvc {
+    QMAKE_CXXFLAGS += /utf-8
+    QMAKE_CFLAGS   += /utf-8
+}
+```
+---
+
+### 图片转换工具PictureToIcon
 
 #### QT关键explicit的理解
 ```c
@@ -121,4 +132,230 @@ void setPixmap(const QPixmap &)
     - bool save(const QString &filename, const char *format = 0, int quality = -1) const ：将QPixmap 代表的图像保存到文件。 filename 是文件名； format 表示图像文件的格式，如果为 0，将根据文件名的后缀自动确定文件格式； quality 对于有损压缩的文件格式来说，它表示图像保存的质量，取值范围为 0 -100， -1 表示采用默认值。返回值为 true 表示保存成功， false 表示保存失败
 - 图像缩放： QPixmap scaled(const QSize &size, Qt::AspectRatioMode aspectRatioMode =Qt::IgnoreAspectRatio, Qt::TransformationMode transformMode = Qt::FastTransformation) const 或QPixmap scaled(int width, int height, Qt::AspectRatioMode aspectRatioMode = Qt::IgnoreAspectRatio,
 Qt::TransformationMode transformMode = Qt::FastTransformation) const 等函数可用于对图像进行缩放操作。例如， scaled 函数的第一个参数是目标大小， aspectRatioMode 是宽高比模式， transformMode 是变换模式2
+---
 
+### 文本转语音TextToSpeech
+
+#### QTextToSpeech类
+- 可以实现文字转语音的功能， 使用say()开始合成文本
+- 可以使用setLocale()来指定语言
+- 要在可用的语音之间进行选择，请使用setVoice()
+- 语言和声音取决于每个平台上可用的合成器。 Linux操作系统默认使用语音调度器
+
+#### availableEngines静态方法
+```c
+QStringList list = QTextToSpeech::availableEngines() ;// 获取有效地引擎
+for(QString &engine:list) // 使用迭代器的方式, 访问list中的所有成员
+{   
+    qDebug()<<"engine:"<<engine;
+    ui->comboBox_engine->addItem(engine);
+}
+```
+
+#### QStringList字符串列表
+```c
+- QStringList继承自 QList<QString> ， QList就是C++的List， 底层实现时一个双链表， 可以使用这个类来处理多个字符串，还等价于c语言的字符指针数组 
+- 像QList一样， QStringList是隐式共享的。它提供了基于索引的快速访问以及快速插入和删除 将字符串列表作为值参数传递既快速又安全
+- QList的所有功能也适用于QStringList。例如，可以使用isEmpty()来测试列表是否为空，还可以调用append()、 prepend()、insert()、 replace()、 removeAll()、 removeAt()等函数。 removeFirst()、 removeLast()和remove One()修改QStringList。此外，QStringList提供了一些方便的函数，使处理字符串列表更容易
+```
+
+#### QComboBox类
+- ComboBox提供了一种方法，以占用最小的屏幕空间的方式向用户显示选项列表， 就是我们理解的下拉列表。
+- 组合框是一个显示当前项的选择小部件，可以弹出可选择项的列表。组合框可以是可编辑的，允许用户修改列表中的每一项。组合框可以包含像素图和字符串;
+如果组合框的当前项发生变化，则会发出三个信号:currentindexChanged()、currentTextChanged()和activated()
+- currentIndexChanged()和currentTextChanged()总是被触发，而不管更改是通过编程方式还是通过用户交互完成的，而activate()只在更改是由用户交互引起的时候被触发
+```c
+Q
+StringList list = QTextToSpeech::availableEngines() ;// 获取有效地引擎
+for(QString &engine:list)
+{
+    qDebug()<<"engine:"<<engine;
+    ui->comboBox_engine->addItem(engine); // 向comboBox_engine中添加元素
+}
+```
+
+#### availableLocales方法
+- QTextToSpeech类的一个成员方法(成员函数)
+- 获取当前支持的语言种类，返回一个向量列表。
+- QVector 就是C++中的vector , 底层实现是一个顺序表
+- 函数原型
+```c
+QVector<QLocale> QTextToSpeech::availableLocales();
+```
+- 代码实现
+```c
+QVector<QLocale> language = tts->availableLocales(); // 获取语音引擎支持的语言
+
+for(QLocale local:language) // 模板容器都支持迭代器的功能
+{
+    qDebug()<<"local:"<<local; // 显示所有
+    qDebug()<<"local language:"<<local.language(); // 显示语言
+    qDebug()<<"local country :"<<local.country(); // 显示国家
+    qDebug()<<"country :"<<QLocale::countryToString(local.country()); // 显示国家
+    qDebug()<<"language:"<<QLocale::languageToString(local.language()); // 显示言
+    qDebug()<<"script :"<<QLocale::scriptToString(local.script()); // 显示描述信息
+    
+    ui->comboBox_language->addItem(QString(tr("%0-%1-%2")
+                        .arg(QLocale::countryToString(local.country()))
+                        .arg(QLocale::scriptToString(local.script()))
+                        .arg(QLocale::languageToString(local.language()))
+                        ),QVariant(local)
+                        );
+}
+```
+
+#### QLocale类
+- 是表示一个语言类。里面支持国家信息、语言和描述信息
+- QLocale在其构造函数中使用语言/国家对进行初始化，并提供类似于QString中的数字到字符串和字符串到数字的转换函数。
+- country() 得到国家的枚举类型常量
+```c
+QString countryToString(QLocale::Country country) // 把国家信息转成字符串
+QString languageToString(QLocale::Language language) // 把语言信息转成字符串
+QString scriptToString(QLocale::Script script) // 把描述信息转成字符串
+
+QVector<QLocale> language = tts->availableLocales(); // 获取语音引擎支持的语言
+for(QLocale local:language) // 模板容器都支持迭代器的功能
+{
+    qDebug()<<"local:"<<local; // 显示所有
+    qDebug()<<"local language:"<<local.language(); // 显示语言
+    qDebug()<<"local country :"<<local.country(); // 显示国家
+    qDebug()<<"country :"<<QLocale::countryToString(local.country()); // 显示国家
+    qDebug()<<"language:"<<QLocale::languageToString(local.language()); // 显示言
+    qDebug()<<"script :"<<QLocale::scriptToString(local.script()); // 显示描述信息
+    
+    ui->comboBox_language->addItem(QString(tr("%0-%1-%2")
+                .arg(QLocale::countryToString(local.country()))
+                .arg(QLocale::scriptToString(local.script()))
+                .arg(QLocale::languageToString(local.language()))
+                ),QVariant(local)
+                );
+}
+```
+
+#### 字符串拼接tr与arg
+- 等价于C语言的sprintf函数
+- tr函数用于生成多国语言, 在tr函数内可以使用中文，将来这个中文可以自动转换成英文，俄文，法语，日语...
+- 还可以使用arg的方式来进行字符串的拼接
+```c
+QString i; // current file's number
+QString total; // number of files to process
+QString fileName; // current file's name
+QString status = QString("Processing file %1 of %2: %3").arg(i).arg(total).arg(fileName);
+
+
+QVector<QLocale> language = tts->availableLocales(); // 获取语音引擎支持的语言
+for(QLocale local:language) // 模板容器都支持迭代器的功能
+{
+    qDebug()<<"local:"<<local; // 显示所有
+    qDebug()<<"local language:"<<local.language(); // 显示语言
+    qDebug()<<"local country :"<<local.country(); // 显示国家
+    qDebug()<<"country :"<<QLocale::countryToString(local.country()); // 显示国家
+    qDebug()<<"language:"<<QLocale::languageToString(local.language()); // 显示语言
+    qDebug()<<"script :"<<QLocale::scriptToString(local.script()); // 显示描述信息
+    
+    ui->comboBox_language->addItem(QString(tr("%0-%1-%2")
+                .arg(QLocale::countryToString(local.country()))
+                .arg(QLocale::scriptToString(local.script()))
+                .arg(QLocale::languageToString(local.language()))
+                ),QVariant(local)
+                );
+}
+```
+
+#### QVariant联合体
+- 这个是一个联合体， 共享一段内存， 可以存放不同类型的变量， 在C++中存放不同类型的类对象。
+- 可以通过构造函数构造出各种类型的QVariant ， 也就是支持很多类型的存放
+```c
+QVector<QLocale> language = tts->availableLocales(); // 获取语音引擎支持的语言
+for(QLocale local:language)
+{
+    qDebug()<<"local:"<<local; // 显示所有
+    qDebug()<<"local language:"<<local.language(); // 显示语言
+    qDebug()<<"local country :"<<local.country(); // 显示国家
+    qDebug()<<"country :"<<QLocale::countryToString(local.country()); // 显示国家
+    qDebug()<<"language:"<<QLocale::languageToString(local.language()); // 显示语言
+    qDebug()<<"script :"<<QLocale::scriptToString(local.script()); // 显示描述信息
+    ui->comboBox_language->addItem(QString(tr("%0-%1-%2")
+                .arg(QLocale::countryToString(local.country()))
+                .arg(QLocale::scriptToString(local.script()))
+                .arg(QLocale::languageToString(local.language()))
+                ),QVariant(local)
+                );
+// 把local存放到下拉列表中, 每一个选项(一个对象字符串)对应一个QVariant变量
+}
+```
+
+#### availableVoices获取支持的声音
+- 获取语音引擎支持的声音
+- 代码实现
+```c
+Q
+Vector<QVoice> voices = tts->availableVoices(); // 获取语音引擎支持的声音
+for(QVoice voice:voices) // C++ 的迭代器
+{
+    //qDebug()<<"voice:"<<voice; // 显示所有
+    qDebug()<<"genderName :"<<QVoice::genderName(voice.gender()); // 显示性别
+    qDebug()<<"name :"<<voice.name() ; // 显示姓名
+    ui->comboBox_gender->addItem(QString(tr("%0(%1)")
+                .arg(voice.name())
+                .arg(QVoice::genderName(voice.gender()))
+                )
+                );
+}
+```
+
+#### QVoice声音类
+- 成员函数
+```c
+QVoice::Age age() const // 声音的年龄
+QVoice::Gender gender() const // 声音的性别
+QString name() const // 声音的姓名
+```
+- 静态成员函数
+```c
+QString ageName(QVoice::Age age) // 把声音年龄转换成字符串
+QString genderName(QVoice::Gender gender) // 把声音性别转换成字符串
+```
+- 代码实现
+```c
+QVector<QVoice> voices = tts->availableVoices(); // 获取语音引擎支持的声音
+for(QVoice voice:voices) // C++ 的迭代器
+{
+    //qDebug()<<"voice:"<<voice; // 显示所有
+    qDebug()<<"genderName :"<<QVoice::genderName(voice.gender()); // 显示性别
+    qDebug()<<"name :"<<voice.name() ; // 显示姓名
+    ui->comboBox_gender->addItem(QString(tr("%0(%1)")
+                .arg(voice.name())
+                .arg(QVoice::genderName(voice.gender()))
+                )
+                );
+}
+```
+
+#### QSlider滑动条类 
+- 滑块是控制有界值的经典小部件。它允许用户沿着水平或垂直槽移动滑块手柄，并将手柄的位置转换为合法范围内的整数值。
+- QSlider自己的函数很少;大部分功能都在QAbstractSlider中。最有用的函数是setValue()，它将滑块直接设置为某值;
+- triggerAction()来模拟点击的效果(对于快捷键很有用);setSingleStep()， setPageStep()设置步骤;和setMinimum()和setMaximum()来定义滚动条的范围。 QSlider提供了控制标记的方法。
+- 您可以使用setTickPosition()来指示您想要标记的位置，使用setTickinterval()来指示您想要标记的数量。当前设置的滴答位置和间隔可以分别使用tickPosition()和ticklnterval()函数查询
+- 代码实现
+```c
+void widget::on_horizontalSlider_speed_valueChanged(int value)
+{
+    //qDebug()<<"on_horizontalSlider_speed_valueChanged:"<<value;
+    ui->label_speed->setNum(value); // 设置显示的数字
+    // 让0-100 的值 转成-1.0 到正1.0 之间的数
+    double newvalue = (value-50)/50.0 ; // 0-100 减去50 变为 -50 ~ 50 之间 , 再除以50.0 即可
+    if(tts != nullptr)
+    {
+        tts->setRate(newvalue);// 设置播放语速
+    }
+}
+```
+
+#### QTextEdit多行文本控件
+#### 这个类是处理多行文本的控件 , 目前只需要知道2个方法即可
+- 设置文本 setText(const QString &text)
+- 获取文本 toPlainText() , 这个文本没有格式 
+---
+
+### 秒表计时器Timer
