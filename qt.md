@@ -242,7 +242,6 @@ QString total; // number of files to process
 QString fileName; // current file's name
 QString status = QString("Processing file %1 of %2: %3").arg(i).arg(total).arg(fileName);
 
-
 QVector<QLocale> language = tts->availableLocales(); // 获取语音引擎支持的语言
 for(QLocale local:language) // 模板容器都支持迭代器的功能
 {
@@ -359,3 +358,164 @@ void widget::on_horizontalSlider_speed_valueChanged(int value)
 ---
 
 ### 秒表计时器Timer
+
+#### QString::asprintf字符串的拼接
+```c
+QString data = QString::asprintf("%02d:%02d.%02d",min,sec,ms); // 拼接字符串
+```
+
+#### QTimer类
+- 这个类提供了单次定时和连续定时的功能
+- connect 设置信号处理函数
+- start() 启动定时器
+- stop() 停止定时器
+```c
+// 定义一个定时器 , 等价于C语言的malloc
+timer = new QTimer(this);
+// 设置定时器的信号处理函数， 等价于linux c 的signal函数功能
+// 参数1 : 发送信号者 timer
+// 参数2 : 发送信号者 发送什么信号 , &类名::信号
+// 参数3 : 接收信号者 this, 就是这个应用程序MainWindow
+// 参数4 : 信号处理函数 用于自定义
+connect(timer,&QTimer::timeout,this ,&MainWindow::timeout_slot);
+// 启动定时器 , 10ms 执行一次信号处理函数
+timer->start(10);
+// 这个函数是信号处理函数
+// 让定时器10ms执行一次timeout_slot
+void MainWindow::timeout_slot()
+{
+    qDebug()<<"timerout_slot():";
+    //qDebug()<<data;
+} 
+
+if(timer != nullptr)
+    {
+    timer->stop() ; // 定时器停止工作
+}
+```
+
+#### QPushButton按下与抬起功能
+- 可以实现按钮的按下效果和抬起效果两种功能 
+- 这种按钮也叫作自锁按钮
+- 可以使用接口函数setCheckable（）进行设置
+```c
+pushButton_start->setCheckable(true);
+```
+
+#### QPushButton的按钮状态获取
+- 可以获取按钮按下或则是弹起的状态
+- 使用isChecked() 成员函数来获取
+```c
+// pushButton_start是否被按下, 如果按下返回为真 , 否则返回为假
+if(ui->pushButton_start->isChecked()) //
+{
+    qDebug()<<"pushButton_start被按下";
+    // 计数
+    qDebug()<< QString::asprintf("%02d:%02d.%02d",min,sec,ms); // 拼接字符串
+}
+```
+
+#### QLCDNumber类
+- 可以设置显示数码管的位数
+```c
+lcdNumber = new QLCDNumber(centralwidget); // 申请内存
+lcdNumber->setObjectName(QString::fromUtf8("lcdNumber")); // 设置对象的名称
+lcdNumber->setGeometry(QRect(0, 0, 400, 100)); // 设置数码管的尺寸
+lcdNumber->setSmallDecimalPoint(true); // 设置 数码管的点 , 不占用一个位置
+lcdNumber->setDigitCount(7); // 数码管的位数
+lcdNumber->setSegmentStyle(QLCDNumber::Flat);// 数码管的显示样式
+ui->lcdNumber->display( QString::asprintf("%02d:%02d.%02d",min,sec,ms)); // 拼接字符串 , 在数码管上显示数字的字符串
+```
+
+#### QStandardItemModel类
+- 是model/view 框架的model部分 , 数据保存部分
+- QStandardItemModel负责保存数据，每个数据项被表示为类QStandardItem的对象
+- QStandardItem用来保存一个数据项，再使用QStandardItemModel将这些数据项组织起来，形成列表、表格或者树，以供其他视图类显示
+```c
+QStandardItemModel * model ; // QStandardItemModel 这是一个标准的model/view的框架
+model = new QStandardItemModel(this); // 定义一个数据结构 , 用来保存数据
+/*设置列字段名*/
+model->setColumnCount(2); // 设置这个数据模型为2列 , 设置 一行有2列
+model->setHeaderData(0,Qt::Horizontal, tr("序号")); // 第一列名 序号
+model->setHeaderData(1,Qt::Horizontal, tr("数值")); // 第二列名 数值
+// 把 数据模型和显示模型进行关联
+ui->tableView->setModel(model) ; // 给tableview 安装一个数据模型 model ， 数据此时就显示出来了
+```
+- 设置一条数据
+```c
+/*设置一条数据*/
+// lineCount : 是数据的第几行
+// 0 : 第几列
+model->setItem(lineCount, 0, new QStandardItem(QString::asprintf("%03d",lineCount+1)));
+model->setItem(lineCount, 1, new QStandardItem(QString::asprintf("%02d:%02d.%02d",min,sec,ms)));
+model->item(lineCount, 0)->setTextAlignment(Qt::AlignCenter); // 设置文本居中对齐
+model->item(lineCount, 1)->setTextAlignment(Qt::AlignCenter); // 设置文本居中对齐
+ui->tableView->setModel(model) ; // 给tableview 安装一个模型 model
+```
+- 删除数据
+```c
+model->removeRows(0,lineCount); // 从0行 一直删除到 指定的行
+```
+
+#### QTableView类
+- 从数据模型中关联数据并按照表的形式显示数据，是一个显示模型
+- 是model / view 的view显示部分
+```c
+ui->tableView->horizontalHeader()->setDefaultSectionSize(199); // 设置水平头的宽度
+ui->tableView->verticalHeader()->setHidden(true); // 行名隐藏
+ui->tableView->setModel(model) ; // 给tableview 安装一个模型 model
+//设置选中时为整行选中
+ui->tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+//设置表格的单元为只读属性， 即不能编辑
+ui->tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+```
+
+#### QTranslator类
+- 可以使程序实现多语言的切换
+- 设置启动英文语言
+```c
+QTranslator translator; // 语言翻译类
+translator.load("en_US.qm"); // 去当前目录下去查 , 05-Timer-Desktop_Qt_5_15_2_MSVC2019_64bit-Debug
+// 以下两种办法都可以, 静态方法更加适用
+#if 1
+    QApplication::installTranslator(&translator);
+#else
+    if(appPointer != nullptr)
+    {
+    appPointer->installTranslator(&translator); // 安装英文
+    }
+#endif
+ui->retranslateUi(this); // 重新初始化界面
+model->clear(); // 把model中的所有内容清空
+model->setColumnCount(2); // 设置列数 ,一共是2列
+model->setHeaderData(0,Qt::Horizontal,tr("NO")); // 第1列的列名
+model->setHeaderData(1,Qt::Horizontal,tr("Value")); // 第2列的列名
+ui->tableView->setModel(model);
+```
+- 设置恢复中文语言
+```c
+// 以下两种办法都可以, 静态方法更加适用
+#if 1
+    QApplication::installTranslator(nullptr);
+#else
+    if(appPointer != nullptr)
+    {
+    appPointer->installTranslator(NULL); // 不安装语言包, 使用默认语言中文
+    }`
+#endif
+ui->retranslateUi(this);
+model->clear(); // 把model中的所有内容清空
+model->setColumnCount(2); // 设置 一行有2列
+model->setHeaderData(0,Qt::Horizontal, tr("序号")); // 第一列名 序号
+model->setHeaderData(1,Qt::Horizontal, tr("数值")); // 第二列名 数值
+ui->tableView->setModel(model);
+```
+
+#### ts文件生成与配置
+- 默认的情况下 , 如果没有在新建工程时选择添加语言包时，需要手动添加ts语言包
+- 新创建一个工程 , 选择要添加的语言包， 会生成一个语言包， 把这个语言包复制到我们的工程内
+
+#### qm文件的生成与配置
+- 这个文件是由ts生成的目标文件 ， 可以直接被加载的文件
+
+### 记事本Notepad
