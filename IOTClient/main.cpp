@@ -1,4 +1,4 @@
-#include "widget.h"
+#include "modbus.h"
 
 #include <QApplication>
 #include <QStyleFactory>

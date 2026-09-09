@@ -83,15 +83,21 @@
       <rect>
        <x>140</x>
        <y>40</y>
-       <width>471</width>
+       <width>481</width>
        <height>40</height>
       </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Microsoft YaHei</family>
+       <pointsize>12</pointsize>
+      </font>
      </property>
     </widget>
     <widget class="QPushButton" name="pushButton_open">
      <property name="geometry">
       <rect>
-       <x>645</x>
+       <x>652</x>
        <y>40</y>
        <width>100</width>
        <height>40</height>
@@ -99,6 +105,7 @@
      </property>
      <property name="font">
       <font>
+       <family>Microsoft YaHei</family>
        <pointsize>10</pointsize>
        <bold>true</bold>
       </font>
@@ -113,7 +120,7 @@
     <widget class="QPushButton" name="pushButton_reflush">
      <property name="geometry">
       <rect>
-       <x>769</x>
+       <x>774</x>
        <y>40</y>
        <width>100</width>
        <height>40</height>
@@ -121,6 +128,7 @@
      </property>
      <property name="font">
       <font>
+       <family>Microsoft YaHei</family>
        <pointsize>10</pointsize>
        <bold>true</bold>
       </font>

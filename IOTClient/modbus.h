@@ -1,5 +1,5 @@
-#ifndef WIDGET_H
-#define WIDGET_H
+#ifndef MODBUS_H
+#define MODBUS_H
 
 #include <QWidget>
 #include <QSerialPort>
@@ -8,6 +8,9 @@
 #include <QComboBox>
 #include <QMessageBox>
 #include <QTimer>
+#include <QMutex>
+#include <QMutexLocker>
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -44,10 +47,13 @@ private slots:
 
     void on_pushButton_relay_clicked(bool checked);
 
+    void on_listWidget_clicked(const QModelIndex &index);
+
 private:
     Ui::Widget *ui;
     QSerialPort *serial = nullptr;
     quint8  cmdConBit = 0;      //硬件控制位
     QTimer *timer = nullptr;    //定时器指针 定时2s
+    QMutex mutex;               //创建互斥锁
 };
-#endif // WIDGET_H
+#endif // MODBUS_H

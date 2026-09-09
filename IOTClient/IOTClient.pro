@@ -1,5 +1,6 @@
 QT += widgets
 QT += serialport
+QT += network mqtt
 
 CONFIG += c++17
 
@@ -8,14 +9,20 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    canopen.cpp \
     main.cpp \
-    widget.cpp
+    modbus.cpp \
+    mqtt.cpp
 
 HEADERS += \
-    widget.h
+    canopen.h \
+    modbus.h \
+    mqtt.h
 
 FORMS += \
-    widget.ui
+    canopen.ui \
+    modbus.ui \
+    mqtt.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

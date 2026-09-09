@@ -1,5 +1,8 @@
-#include "widget.h"
-#include "ui_widget.h"
+#include "modbus.h"
+#include "ui_modbus.h"
+
+#include "canopen.h"
+#include "mqtt.h"
 
 Widget::Widget(QWidget *parent)
     : QWidget(parent)
@@ -25,172 +28,6 @@ Widget::~Widget()
 {
     delete ui;
 }
-
-void Widget::initUi()
-{
-    // 绘制背景图片
-    QPalette PAllbackground = this->palette();
-    QImage ImgAllbackground(QString::fromUtf8(":/images/back.png"));
-    QImage pix = ImgAllbackground.scaled(this->size(),Qt::IgnoreAspectRatio);
-    PAllbackground.setBrush(QPalette::Window, QBrush(pix));
-    this->setPalette(PAllbackground);
-
-    // 设置 listwidget 的样式表
-    ui->listWidget->setStyleSheet("QListWidget { background: transparent;"
-                                  "border: none; "
-                                  "outline: none;"
-                                  "font-size: 18px; "
-                                  "color: white; "
-                                  "font-weight: bold;"
-                                  "padding-top: 30px;}"
-                                  "QListWidget::item { min-height: 50px;"
-                                  "border: none; }"
-                                  "QListWidget::item:selected {min-height: 50px;"
-                                  "background: #5354cb;"
-                                  "border: none; "
-                                  "border-radius: 10px; }"
-                                  );
-
-    // 设置 tabwidget 透明
-    ui->tabWidget->setStyleSheet("QTabWidget::pane { background: transparent;border: none; }");
-    ui->tabWidget->tabBar()->hide() ; // 隐藏标签项
-    ui->tabWidget->setCurrentIndex(0);
-
-    ui->label->setStyleSheet("color:white;");
-
-    ui->pushButton_led1->setStyleSheet("QPushButton{"
-                                        "border-image: url(:/images/led1off.png);"
-                                        "border: none;"
-                                        "}"
-                                        );
-
-    ui->pushButton_led2->setStyleSheet("QPushButton{"
-                                       "border-image: url(:/images/led2off.png);"
-                                       "border: none;"
-                                       "}"
-                                       );
-
-
-    ui->pushButton_beep->setStyleSheet("QPushButton{"
-                                       "border-image: url(:/images/beepoff.png);"
-                                       "border: none;"
-                                       "}"
-                                       );
-
-
-    ui->pushButton_relay->setStyleSheet("QPushButton{"
-                                       "border-image: url(:/images/relayoff.png);"
-                                       "border: none;"
-                                       "}"
-                                       );
-
-
-    ui->pushButton_hum->setStyleSheet("QPushButton{"
-                                      "border-image: url(:/images/hum.png);"
-                                      "color:white;"
-                                      "border: none;"
-                                      "padding-right: 10px;"
-                                      "padding-top: 26px;"
-                                      "padding-bottom: 0px;"
-                                      "text-align: bottom right;"
-                                      "}"
-                                      );
-    QFont font;
-    font.setFamily(QString::fromUtf8("Microsoft YaHei"));
-    font.setPointSize(16);
-    font.setBold(true);
-    ui->pushButton_hum->setFont(font);
-
-    ui->pushButton_temp->setStyleSheet("QPushButton{"
-                                       "border-image: url(:/images/temp.png);"
-                                       "color:white;"
-                                       "border: none;"
-                                       "padding-right: 10px;"
-                                       "padding-top: 26px;"
-                                       "padding-bottom: 0px;"
-                                       "text-align: bottom right;"
-                                       "}"
-                                       );
-    ui->pushButton_temp->setFont(font);
-
-
-
-    ui->pushButton_cpu->setStyleSheet("QPushButton{"
-                                      "border-image: url(:/images/cpu.png);"
-                                      "color:white;"
-                                      "border: none;"
-                                      "padding-right: 10px;"
-                                      "padding-top: 26px;"
-                                      "padding-bottom: 0px;"
-                                      "text-align: bottom right;"
-                                      "}"
-                                       );
-    ui->pushButton_cpu->setFont(font);
-
-
-    ui->pushButton_cur->setStyleSheet("QPushButton{"
-                                       "border-image: url(:/images/cur.png);"
-                                      "color:white;"
-                                      "border: none;"
-                                      "padding-right: 10px;"
-                                      "padding-top: 26px;"
-                                      "padding-bottom: 0px;"
-                                      "text-align: bottom right;"
-                                      "}"
-                                      );
-    ui->pushButton_cur->setFont(font);
-
-
-    ui->pushButton_vol->setStyleSheet("QPushButton{"
-                                       "border-image: url(:/images/vol.png);"
-                                      "color:white;"
-                                      "border: none;"
-                                      "padding-right: 10px;"
-                                      "padding-top: 26px;"
-                                      "padding-bottom: 0px;"
-                                      "text-align: bottom right;"
-                                      "}"
-                                      );
-    ui->pushButton_vol->setFont(font);
-
-    ui->pushButton_vr->setStyleSheet("QPushButton{"
-                                       "border-image: url(:/images/vr.png);"
-                                     "color:white;"
-                                     "border: none;"
-                                     "padding-right: 10px;"
-                                     "padding-top: 26px;"
-                                     "padding-bottom: 0px;"
-                                     "text-align: bottom right;"
-                                     "}"
-                                     );
-    ui->pushButton_vr->setFont(font);
-
-
-    ui->pushButton_pw->setStyleSheet("QPushButton{"
-                                       "border-image: url(:/images/pw.png);"
-                                     "color:white;"
-                                     "border: none;"
-                                     "padding-right: 10px;"
-                                     "padding-top: 26px;"
-                                     "padding-bottom: 0px;"
-                                     "text-align: bottom right;"
-                                     "}"
-                                     );
-    ui->pushButton_pw->setFont(font);
-
-
-}
-void Widget::on_pushButton_reflush_clicked()
-{
-    ui->comboBox->clear();
-    QList<QSerialPortInfo> serialPorts = QSerialPortInfo::availablePorts() ;
-    foreach (QSerialPortInfo port, serialPorts) {
-        qDebug() << "串口名: " << port.portName() ; // 串口名称
-        qDebug() << "串口描述: " << port.description() ; // 串口描述
-        ui->comboBox->addItem(port.portName()+" #"+port.description(),QVariant(port.portName()));
-    }
-}
-
 
 void Widget::on_pushButton_open_clicked(bool checked)
 {
@@ -248,6 +85,17 @@ void Widget::on_pushButton_open_clicked(bool checked)
         {
             timer->stop();
         }
+    }
+}
+
+void Widget::on_pushButton_reflush_clicked()
+{
+    ui->comboBox->clear();
+    QList<QSerialPortInfo> serialPorts = QSerialPortInfo::availablePorts() ;
+    foreach (QSerialPortInfo port, serialPorts) {
+        qDebug() << "串口名: " << port.portName() ; // 串口名称
+        qDebug() << "串口描述: " << port.description() ; // 串口描述
+        ui->comboBox->addItem(port.portName()+" #"+port.description(),QVariant(port.portName()));
     }
 }
 
@@ -324,6 +172,8 @@ bool Widget::cmdStatus(quint8 src_cmd[],quint8 n)
 
 void Widget::on_pushButton_led1_clicked(bool checked)
 {
+    QMutexLocker locker(&mutex);//上锁 函数结束自动释放锁
+
     if(checked)     //ledon
     {
         cmdConBit = 0;
@@ -389,6 +239,8 @@ void Widget::on_pushButton_led1_clicked(bool checked)
 
 void Widget::on_pushButton_led2_clicked(bool checked)
 {
+    QMutexLocker locker(&mutex);//上锁 函数结束自动释放锁
+
     if(checked)     //ledon
     {
         cmdConBit = 0;
@@ -454,6 +306,8 @@ void Widget::on_pushButton_led2_clicked(bool checked)
 
 void Widget::on_pushButton_beep_clicked(bool checked)
 {
+    QMutexLocker locker(&mutex);//上锁 函数结束自动释放锁
+
     if(checked)     //beepon
     {
         cmdConBit = 0;
@@ -519,6 +373,8 @@ void Widget::on_pushButton_beep_clicked(bool checked)
 
 void Widget::on_pushButton_relay_clicked(bool checked)
 {
+    QMutexLocker locker(&mutex);//上锁 函数结束自动释放锁
+
     if(checked)     //relay
     {
         cmdConBit = 0;
@@ -583,6 +439,8 @@ void Widget::on_pushButton_relay_clicked(bool checked)
 
 void Widget::timer_timeout_slot()
 {
+    QMutexLocker locker(&mutex);//上锁 函数结束自动释放锁
+
     qDebug() << "timer_timeout_slot";
 
     quint8 cmd[] = {0x01, 0x03, 0x00, 0x01, 0x00, 0x07, 0x00, 0x00};
@@ -619,3 +477,186 @@ void Widget::timer_timeout_slot()
         }
     }
 }
+
+void Widget::initUi()
+{
+    // 绘制背景图片
+    QPalette PAllbackground = this->palette();
+    QImage ImgAllbackground(QString::fromUtf8(":/images/back.png"));
+    QImage pix = ImgAllbackground.scaled(this->size(),Qt::IgnoreAspectRatio);
+    PAllbackground.setBrush(QPalette::Window, QBrush(pix));
+    this->setPalette(PAllbackground);
+
+    // 设置 tabwidget 透明
+    ui->tabWidget->setStyleSheet("QTabWidget::pane { background: transparent;border: none; }");
+    ui->tabWidget->tabBar()->hide() ; // 隐藏标签项
+    ui->tabWidget->setCurrentIndex(0);
+
+    ui->label->setStyleSheet("color:white;");
+
+    ui->pushButton_led1->setStyleSheet("QPushButton{"
+                                       "border-image: url(:/images/led1off.png);"
+                                       "border: none;"
+                                       "}"
+                                       );
+
+    ui->pushButton_led2->setStyleSheet("QPushButton{"
+                                       "border-image: url(:/images/led2off.png);"
+                                       "border: none;"
+                                       "}"
+                                       );
+
+
+    ui->pushButton_beep->setStyleSheet("QPushButton{"
+                                       "border-image: url(:/images/beepoff.png);"
+                                       "border: none;"
+                                       "}"
+                                       );
+
+
+    ui->pushButton_relay->setStyleSheet("QPushButton{"
+                                        "border-image: url(:/images/relayoff.png);"
+                                        "border: none;"
+                                        "}"
+                                        );
+
+
+    ui->pushButton_hum->setStyleSheet("QPushButton{"
+                                      "border-image: url(:/images/hum.png);"
+                                      "color:white;"
+                                      "border: none;"
+                                      "padding-right: 10px;"
+                                      "padding-top: 26px;"
+                                      "padding-bottom: 0px;"
+                                      "text-align: bottom right;"
+                                      "}"
+                                      );
+    QFont font;
+    font.setFamily(QString::fromUtf8("Microsoft YaHei"));
+    font.setPointSize(16);
+    font.setBold(true);
+    ui->pushButton_hum->setFont(font);
+
+    ui->pushButton_temp->setStyleSheet("QPushButton{"
+                                       "border-image: url(:/images/temp.png);"
+                                       "color:white;"
+                                       "border: none;"
+                                       "padding-right: 10px;"
+                                       "padding-top: 26px;"
+                                       "padding-bottom: 0px;"
+                                       "text-align: bottom right;"
+                                       "}"
+                                       );
+    ui->pushButton_temp->setFont(font);
+
+
+
+    ui->pushButton_cpu->setStyleSheet("QPushButton{"
+                                      "border-image: url(:/images/cpu.png);"
+                                      "color:white;"
+                                      "border: none;"
+                                      "padding-right: 10px;"
+                                      "padding-top: 26px;"
+                                      "padding-bottom: 0px;"
+                                      "text-align: bottom right;"
+                                      "}"
+                                      );
+    ui->pushButton_cpu->setFont(font);
+
+
+    ui->pushButton_cur->setStyleSheet("QPushButton{"
+                                      "border-image: url(:/images/cur.png);"
+                                      "color:white;"
+                                      "border: none;"
+                                      "padding-right: 10px;"
+                                      "padding-top: 26px;"
+                                      "padding-bottom: 0px;"
+                                      "text-align: bottom right;"
+                                      "}"
+                                      );
+    ui->pushButton_cur->setFont(font);
+
+
+    ui->pushButton_vol->setStyleSheet("QPushButton{"
+                                      "border-image: url(:/images/vol.png);"
+                                      "color:white;"
+                                      "border: none;"
+                                      "padding-right: 10px;"
+                                      "padding-top: 26px;"
+                                      "padding-bottom: 0px;"
+                                      "text-align: bottom right;"
+                                      "}"
+                                      );
+    ui->pushButton_vol->setFont(font);
+
+    ui->pushButton_vr->setStyleSheet("QPushButton{"
+                                     "border-image: url(:/images/vr.png);"
+                                     "color:white;"
+                                     "border: none;"
+                                     "padding-right: 10px;"
+                                     "padding-top: 26px;"
+                                     "padding-bottom: 0px;"
+                                     "text-align: bottom right;"
+                                     "}"
+                                     );
+    ui->pushButton_vr->setFont(font);
+
+
+    ui->pushButton_pw->setStyleSheet("QPushButton{"
+                                     "border-image: url(:/images/pw.png);"
+                                     "color:white;"
+                                     "border: none;"
+                                     "padding-right: 10px;"
+                                     "padding-top: 26px;"
+                                     "padding-bottom: 0px;"
+                                     "text-align: bottom right;"
+                                     "}"
+                                     );
+    ui->pushButton_pw->setFont(font);
+
+    // 设置 listwidget 的样式表
+    ui->listWidget->setStyleSheet("QListWidget { background: transparent;"
+                                  "border: none; "
+                                  "outline: none;"
+                                  "font-size: 22px; "
+                                  "color: white; "
+                                  "font-weight: bold;"
+                                  "padding-left: 5px;"
+                                  "padding-right: 5px;"
+                                  "padding-top: 50px;}"
+                                  "QListWidget::item { min-height: 100px;"
+                                  "color:white;"
+                                  "border: none; }"
+                                  "QListWidget::item:selected {min-height: 80px;"
+                                  "color:white;"
+                                  "background: #5354cb;"
+                                  "border: none; "
+                                  "border-radius: 5px; }"
+                                  );
+    //往下拉列表添加元素
+    QListWidgetItem * modbus =  new QListWidgetItem(QIcon(":/images/modbus.png"),"STM32 | Modbus", ui->listWidget);
+    ui->listWidget->addItem(modbus);
+    QListWidgetItem * mqtt =  new QListWidgetItem(QIcon(":/images/mqtt.png"),"STM32 | MQTT", ui->listWidget);
+    ui->listWidget->addItem(mqtt);
+    QListWidgetItem * canopen =  new QListWidgetItem(QIcon(":/images/canopen.png"),"STM32 | CANOpen", ui->listWidget);
+    ui->listWidget->addItem(canopen);
+    ui->listWidget->setCurrentItem(modbus);//默认
+
+    //向tabwidget 添加界面
+    MQTT *Mqtt =  new MQTT(this);
+    ui->tabWidget->addTab(Mqtt,"MQTT");
+    CANOpen *Canopen =  new CANOpen(this);
+    ui->tabWidget->addTab(Canopen,"CANOpen");
+
+    ui->tabWidget->setStyleSheet("QTabWidget::pane { background: transparent;border: none; }");
+    ui->tabWidget->tabBar()->hide() ; // 隐藏标签项
+    ui->tabWidget->setCurrentIndex(0);
+}
+
+
+void Widget::on_listWidget_clicked(const QModelIndex &index)
+{
+    //qDebug() << "on_listWidget_itemClicked";
+    ui->tabWidget->setCurrentIndex(index.row());//选择子窗体
+}
+
