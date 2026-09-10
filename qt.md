@@ -43,6 +43,20 @@ RC_ICONS = images/logo.ico
 a.setStyle(QStyleFactory::create("fusion")); // fusion 这个主题比较好看
 ```
 
+### 加载皮肤
+```c
+//在文本中加载样式表
+//QFile file(":/qss/silvery.css");
+QFile file(":/qss/psblack.css");
+    if (file.open(QFile::ReadOnly)) {
+        QString qss = QLatin1String(file.readAll());
+        QString paletteColor = qss.mid(20, 7);
+        qApp->setPalette(QPalette(QColor(paletteColor)));
+        qApp->setStyleSheet(qss);
+        file.close();
+    }
+```
+
 ### 编码转换
 ```c
 //*.pro
@@ -112,7 +126,7 @@ void setPixmap(const QPixmap &)
 ```
 
 #### QRadioButton单选按钮
-- 这是一个选项按钮，可以打开(选中)或关闭(未选中)。单选按钮通常为用户提供“众多选择中的一个”
+- 这是一个选项按钮，可以打开(选中)或关闭(未选中)。单选按钮通常 为用户提供“众多选择中的一个”
 - 在一组单选按钮中，一次只能选中一个单选按钮;如果用户选择另一个按钮，先前选择的按钮将被关闭
 - 单选按钮默认情况下是自动排他的。如果启用了自动排他，那么属于同一个父小部件的单选按钮的行为就像属于同一个排他按钮组一样。如果您需要多个独占按钮组用于属于同一个父小部件的单选按钮，请将它们放入QButtonGroup中
 - 每当按钮被打开或关闭时，它都会发出toggled()信号。如果您想在每次按钮改变状态时触发一个操作，则连接到此信号
@@ -517,5 +531,778 @@ ui->tableView->setModel(model);
 
 #### qm文件的生成与配置
 - 这个文件是由ts生成的目标文件 ， 可以直接被加载的文件
+---
 
 ### 记事本Notepad
+
+#### 判断字符串是否为空
+```c
+// 是否获取到了文件名
+    if(!fileName.isEmpty()) // 获取到文件名后, 才可以操作
+    {
+        QFile file(fileName) ; // 创建一个文件对象
+        if (!file.open(QIODevice::ReadWrite | QIODevice::Text))
+            return;
+        QByteArray data = file.readAll(); // data 就是一个数组,带编码格式的数组, 需要解码
+        ui->textEdit->setText(QString(data));// 显示到控件上
+        QFileInfo fileinfo(fileName);
+        this->setWindowTitle(fileinfo.fileName()+tr(" - 记事本"));
+        file.close();// 关闭文件
+        saveFlag = true;// 数据已经存盘
+    }
+```
+
+#### 文件操作QFile类
+- QFile 类提供了 操作文件的类，可以对文件进行打开， 关闭， 读写， 定位的功能
+- open() 打开文件 , 等价于C语言的open函数
+- close() 关闭文件
+- readAll() 读文件
+- write() 写文件
+```c
+// 是否获取到了文件名
+    if(!fileName.isEmpty()) // 获取到文件名后, 才可以操作
+    {
+        QFile file(fileName) ; // 创建一个文件对象
+        if (!file.open(QIODevice::ReadWrite | QIODevice::Text))
+            return;
+        QByteArray data = file.readAll(); // data 就是一个数组,带编码格式的数组, 需要解码
+        ui->textEdit->setText(QString(data));// 显示到控件上
+        QFileInfo fileinfo(fileName);
+        this->setWindowTitle(fileinfo.fileName()+tr(" - 记事本"));
+        file.close();// 关闭文件
+        saveFlag = true;// 数据已经存盘
+    }
+```
+
+#### 获取文件信息QFileInfo类
+- 可以获取文件名和路径
+- fileName() 可以获取文件名
+```c
+QFileInfo fileinfo(fileName);
+this->setWindowTitle(fileinfo.fileName()+tr(" - 记事本"));
+```
+
+#### 文件读写的编码转换
+- 在读写文件时，需要对读回来的内容进行解码
+- 写文件时， 要对写入的内容进行编码
+```c
+//例如 ， 写文件时， 要把QString 转换成QByteArray , 需要对字符串进行编码即可
+// 文件名 存在
+QFile file(fileName) ; // 创建一个文件对象
+// 文件存在, 要清空
+if (!file.open(QIODevice::ReadWrite | QIODevice::Text|QIODevice::Truncate))
+    return;
+// 把 QString 转换成QByteArray , 需要对字符串进行编码即可
+file.write(ui->textEdit->toPlainText().toUtf8());// 把数据写入到文件内
+file.close() ; // 关闭文件
+
+
+//例如 ， 读文件时， 要把QByteArray转换成QString , 需要对字符串进行解码
+// 打开文件
+fileName = QFileDialog::getOpenFileName(this,tr("打开"),".","Text Files (*.txt);; All Files (*.*)");
+qDebug()<<"fileName="<<fileName;
+// 是否获取到了文件名
+if(!fileName.isEmpty()) // 获取到文件名后, 才可以操作
+{
+    QFile file(fileName) ; // 创建一个文件对象
+    if (!file.open(QIODevice::ReadWrite | QIODevice::Text))
+        return;
+    QByteArray data = file.readAll(); // data 就是一个数组,带编码格式的数组, 需要解码
+    ui->textEdit->setText(QString(data));// 显示到控件上， 就是解码
+    QFileInfo fileinfo(fileName);
+    this->setWindowTitle(fileinfo.fileName()+tr(" - 记事本"));
+    file.close();// 关闭文件
+    saveFlag = true;// 数据已经存盘
+}
+```
+
+#### QByteArray类
+- 我们可以这么理解， 这个类就是一个带编码的字符串， 写入文件时需要使用QByteArray 格式， 显示到控件上时， 需要转换成QString
+- 网络通信时, 也需要使用QByteArray格式的字节数组
+
+```c
+//读文件的QByteArray
+// 打开文件
+fileName = QFileDialog::getOpenFileName(this,tr("打开"),".","Text Files (*.txt);; All Files (*.*)");
+qDebug()<<"fileName="<<fileName;
+// 是否获取到了文件名
+if(!fileName.isEmpty()) // 获取到文件名后, 才可以操作
+{
+    QFile file(fileName) ; // 创建一个文件对象
+    if (!file.open(QIODevice::ReadWrite | QIODevice::Text))
+        return;
+    QByteArray data = file.readAll(); // data 就是一个数组,带编码格式的数组, 需要解码
+    ui->textEdit->setText(QString(data));// 显示到控件上
+    QFileInfo fileinfo(fileName);
+    this->setWindowTitle(fileinfo.fileName()+tr(" - 记事本"));
+    file.close();// 关闭文件
+    saveFlag = true;// 数据已经存盘
+}
+
+//写文件的QByteArray
+// 文件名 存在
+QFile file(fileName) ; // 创建一个文件对象
+// 文件存在, 要清空
+if (!file.open(QIODevice::ReadWrite | QIODevice::Text|QIODevice::Truncate))
+return;
+// 把 QString 转换成QByteArray , 需要对字符串进行编码即可
+file.write(ui->textEdit->toPlainText().toUtf8());// 把数据写入到文件内
+file.close() ; // 关闭文件
+```
+
+#### QMessageBox类
+- 用来处理弹窗显示的类
+- 可以使用类创建对象的方式，进行使用
+```c
+// 且 textedit 中有内容, , 提示是否需要保存
+if(!ui->textEdit->toPlainText().isEmpty()) //textedit 中有内容
+{
+    // 弹窗
+    qDebug()<<"要弹窗";
+    QMessageBox msgBox;
+    // 遗留问题1: 如何改变弹窗的尺寸, 目前改不了
+    msgBox.setWindowTitle(tr("记事本"));
+    //msgBox.setText("The document has been modified.");
+    msgBox.setInformativeText("Do you want to save your changes?");
+    msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+    msgBox.setDefaultButton(QMessageBox::Save); // 默认选择
+    int ret = msgBox.exec();
+    switch (ret)
+    {
+        case QMessageBox::Save:
+        // Save was clicked
+        on_action_save_triggered();
+        // fileName 字符串清空
+        fileName.clear();
+        ui->textEdit->clear();
+        this->setWindowTitle(tr("无标题")+tr(" - 记事本"));
+        break;
+        case QMessageBox::Discard:
+        // Don't Save was clicked
+        fileName.clear();
+        ui->textEdit->clear();
+        this->setWindowTitle(tr("无标题")+tr(" - 记事本"));
+        break;
+        case QMessageBox::Cancel:
+        // Cancel was clicked
+        break;
+        default:
+        // should never be reached
+        break;
+    }
+}
+
+//还可以使用静态成员函数的方式
+void MainWindow::on_action_about_notepad_triggered()
+{
+    QMessageBox::about(this,tr("记事本"),tr("这是记事本 1.5 "));
+} v
+oid MainWindow::on_action_aboutQt_triggered()
+{
+    QMessageBox::aboutQt(this);
+}
+```
+
+#### 事件触发closeEvent方法
+- 每次关闭窗口时, 发送一个事件QCloseEvent ，应用程序可以接收这个事件, 并对事件进行处理
+- 要实现关闭窗口时, 提示是否保存文件, 必须使用重新实现 QMainWindow中的一个方法 closeEvent
+- accept() 让事件继续传递下去， 不影响事件最终的效果， 关闭窗体
+- ignore() 忽略关闭窗体的操作
+```c
+//mainwindow.h 中声明
+// 声明一个父类的虚函数, 用子类替换父类的实现
+void closeEvent(QCloseEvent *event);
+
+//mainwindow.cpp
+// 要实现关闭窗口时, 提示是否保存文件, 必须使用重新实现 QMainWindow中的一个方法 closeEvent
+// 每次关闭窗口时, 发送一个事件QCloseEvent ,应用程序可以接收这个事件, 并对事件进行处理
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    qDebug()<<"closeEvent被触发";
+    //
+    if(fileName.isEmpty()) // 文件名为空
+    {
+        // 且 textedit 中有内容, 需要弹窗, 提示是否需要保存
+        if(!ui->textEdit->toPlainText().isEmpty()) //textedit 中有内容
+        {
+            // 弹窗
+            qDebug()<<"要弹窗";
+            QMessageBox msgBox;
+            // 遗留问题1: 如何改变弹窗的尺寸, 目前改不了
+            msgBox.setWindowTitle(tr("记事本"));
+            //msgBox.setText("The document has been modified.");
+            msgBox.setInformativeText("Do you want to save your changes?");
+            msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+            msgBox.setDefaultButton(QMessageBox::Save); // 默认选择
+            int ret = msgBox.exec();
+            switch (ret)
+            {
+                case QMessageBox::Save:
+                    // Save was clicked
+                    // 继续让事件传递下去
+                    event->accept();
+                    break;
+                case QMessageBox::Discard:
+                    // Don't Save was clicked
+                    // 继续让事件传递下去
+                    event->accept();
+                    break;
+                case QMessageBox::Cancel:
+                    // Cancel was clicked
+                    event->ignore(); // 忽略关闭窗体的操作
+                    break;
+                default:
+                    // should never be reached
+                    break;
+            }
+        } 
+        else // 文件名为空 , textedit没有内容, 不需要弹窗
+        {
+            qDebug()<<"文件名为空 , textedit没有内容, 不需要弹窗";
+        }
+    } 
+    else // 文件名不为空
+    {
+        // 文件是否存盘
+        // 文件是否保存标志位, true: 表示存盘 , false : 没有存盘
+        if(!saveFlag) // 条件满足 , 表示没有存盘 , 需要弹窗提示保存
+        {
+            qDebug()<<"文件名不为空 文件没有保存,需要弹窗";
+            QMessageBox msgBox;
+            // 遗留问题1: 如何改变弹窗的尺寸, 目前改不了
+            //msgBox.setText("The document has been modified.");
+            msgBox.setInformativeText("Do you want to save your changes?");
+            msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+            msgBox.setDefaultButton(QMessageBox::Save); // 默认选择
+            int ret = msgBox.exec();
+            switch (ret)
+            {
+                case QMessageBox::Save:
+                    // Save was clicked
+                    // 继续让事件传递下去
+                    event->accept();
+                    break;
+                case QMessageBox::Discard:
+                    // Don't Save was clicked
+                    // 继续让事件传递下去
+                    event->accept();
+                    break;
+                case QMessageBox::Cancel:
+                    // Cancel was clicked
+                    event->ignore(); // 忽略关闭窗体的操作
+                    break;
+                default:
+                    // should never be reached
+                    break;
+            }
+        } 
+        else // 文件已存盘
+        {
+
+        }
+    }
+}
+```
+
+#### QPrinter类
+- 这是一个打印机类， 表示一个打印机
+```c
+    QPrinter printer ; // 定义一个打印机
+    QPrintDialog printDialog(&printer, this); // 定义一个打印对话窗口
+    if (printDialog.exec() == QDialog::Accepted) 
+    { 
+    // 点击确定时, 开始打印
+    // print ...
+        ui->textEdit->print(&printer); // 把textedit中的内容打印
+    }
+```
+
+#### QPrintDialog类
+- 这是一个打印对话框， 可以选择打印机和打印设置的对话框
+```c
+Printer printer ; // 定义一个打印机
+QPrintDialog printDialog(&printer, this); // 定义一个打印对话窗口
+if (printDialog.exec() == QDialog::Accepted) { 
+    // 点击确定时, 开始打印
+    // print ...    
+    ui->textEdit->print(&printer); // 把textedit中的内容打印
+}
+```
+
+#### QFont类
+- 表示一个字体的信息
+- 一个字体信息如下， 字体名 ， 字体大小， 宽度 ， 是否斜体
+```c
+QFont(Adobe Devanagari,22,-1,5,50,0,0,0,0,0,Regular)
+QFont(Arial,12,-1,5,50,0,0,0,0,0,Regular)
+```
+
+#### QFontDialog类
+- 字体对话框类
+- getFont() 获取字体
+```c
+void MainWindow::on_action_font_triggered()
+{
+    bool ok;
+    // 获取字体
+    QFont font = QFontDialog::getFont(&ok, QFont("Helvetica [Cronyx]", 10), this);
+    if (ok) 
+    {
+    // the user clicked OK and font is set to the font the user selected
+    } 
+    else 
+    {
+    // the user canceled the dialog; font is set to the initial
+    // value, in this case Helvetica [Cronyx], 10
+    } 
+    qDebug()<<"font="<<font;
+    ui->textEdit->setFont(font); // 对选中的文本设置字体
+}
+```
+
+#### QAction类
+- 这个是菜单中的动作类 , 用来表示一个菜单中的选项
+- setCheckable() 可以让QAction 实现两种状态切换 , 实现开关的切换
+```c
+QAction *action_bold;
+action_bold = new QAction(MainWindow);
+action_bold->setObjectName(QString::fromUtf8("action_bold"));
+action_bold->setCheckable(true);
+
+
+void MainWindow::on_action_bold_triggered(bool checked)
+{
+    if(checked)
+    {
+        ui->textEdit->setFontWeight(QFont::Bold); //设置粗体
+    } 
+    else
+    {
+        ui->textEdit->setFontWeight(QFont::Normal); //设置正常字体
+    }
+}
+```
+---
+
+### 画图工具Painter
+
+#### paintEvent事件
+- 这是一个绘画事件，在窗体被显示，隐藏， 或则被遮挡时自动执行的一个事件。
+- 这个函数是一个虚函数， 需要在子类中重新实现
+- 手动使用update 函数时，也会被调用
+```c
+protected slots:
+    // 这个函数是虚函数, 子类重新实现父类的方法
+    // 实现绘画事件 paintEvent
+    // 在窗口被显示的时候调用一次 , 窗口发生改变时都会被调用
+    // 手动使用update 函数时 也会被调用
+    void paintEvent(QPaintEvent *event) ;
+```
+
+#### 鼠标事件
+- 鼠标事件有按下， 释放， 单击， 右击， 移动， 滚轮事件。
+- 在程序中可以判断鼠标的操作。
+```c
+// 这几个函数是虚函数, 这里时重新实现QWidget的函数, 子类覆盖父类
+void mousePressEvent(QMouseEvent *event); // 鼠标按压事件
+void mouseReleaseEvent(QMouseEvent *event); // 鼠标释放事件
+void mouseMoveEvent(QMouseEvent *event); // 鼠标移动事件
+```
+
+#### 鼠标的按压事件mousePressEvent
+-分为单击， 右击 ， 双击都属于按压事件
+```c
+void MainWindow::mousePressEvent(QMouseEvent *event) // 鼠标按下事件
+{
+    if(event->button() == Qt::LeftButton){ // 如果是鼠标左键按下
+        qDebug()<<"鼠标左键被按下";
+        qDebug()<<"鼠标被单击:"<<event->pos(); // 打印鼠标的位置
+    }
+}
+```
+
+#### 鼠标的释放事件mouseReleaseEvent
+- 这个就是鼠标在点击后释放的时候， 发生的事件
+```c
+void MainWindow::mouseReleaseEvent(QMouseEvent *event) // 鼠标释放事件
+{
+    // 释放鼠标后 , 要恢复鼠标的形状
+    setCursor(Qt::ArrowCursor); // 正常鼠标样式
+}
+```
+
+#### 鼠标的移动事件mouseMoveEvent
+- 在程序中认为鼠标移动时， 是单击后移动鼠标时， 才认定为移动
+```c
+// 可设置单击后移动, 认为是鼠标移动
+// 也可以实时的捕捉
+void MainWindow::mouseMoveEvent(QMouseEvent *event) // 鼠标移动事件
+{
+    qDebug()<<"鼠标移动";
+    // 是判断鼠标在单击的过程中移动了鼠标
+    if(event->buttons() & Qt::LeftButton)
+    {
+
+    }
+}
+```
+- 设置鼠标跟踪
+1. 设置鼠标跟踪，默认鼠标需要单机后才可以跟踪，需要设置一下才可以实时跟踪
+2. 需要设置2个地方才可以实现实时跟踪
+    - MainWindow设置鼠标跟踪
+    - centralwidget设置鼠标跟踪
+```c
+MainWindow->resize(800, 600);
+MainWindow->setMouseTracking(true);
+centralwidget = new QWidget(MainWindow);
+centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
+centralwidget->setMouseTracking(true);
+```
+
+#### 设置窗体的形状
+- setWindowState() 这个函数可以设置窗体的形式 ， 可以全屏， 最大化， 常规形式，最小化几种形式
+```c
+setWindowState(Qt::WindowMaximized) ; // 让窗体最大化
+```
+
+#### 使用paintEvent事件加载一张图片
+- 可以使用paintEvent绘画事件， 给程序加载一张背景图片
+- 可以使用update 手动产生一次绘图事件
+```c
+// 在构造函数中, 对fileName进行赋值, 这样可以自动加载这个图片
+fileName = ":/images/backgroud.png"; // 这个图片必须在资源文件中
+void MainWindow::on_action_picture_triggered()
+{
+    fileName = QFileDialog::getOpenFileName(this,tr("打开图片"),".",
+                                            "Piture Files (*.jdp *.png *.bmp);; All Files (*.*)"
+                                            ) ;
+    if(!fileName.isEmpty()) //不等于空, 要把这个图片显示到控件内
+    {
+        update(); // 这个函数被调用后, 会产生一个绘画事件 paintEvent ,paintEvent 事件 是一个虚函数, 我们要重新实现这个函数
+    } 
+    qDebug()<<"fileName="<<fileName;
+}
+// 实现绘画事件 paintEvent
+// 在窗口被显示的时候调用一次 , 窗口发生改变时都会被调用
+// 手动使用update 函数时 也会被调用
+void MainWindow::paintEvent(QPaintEvent *event)
+{
+    qDebug()<<"paintEvent() 被调用";
+    QPainter painter(this);// 定义一个画笔, 这个画笔可以画出很多种形状, 图片
+    // 把背景图片显示到控件上
+    if(!fileName.isEmpty())
+    {
+        QPixmap map(fileName); // 定义一个pixmap对象
+        painter.drawPixmap(QPoint(0,0),map);// 把图片绘制到窗体中
+    }
+}
+```
+
+#### QPainter绘画类
+- 这个类可以在图形界面上绘画出指定的形状，文字， 图片等内容
+- drawPixmap() 绘制一张图片在指定的窗口上
+```c
+// 实现绘画事件 paintEvent
+// 在窗口被显示的时候调用一次 , 窗口发生改变时都会被调用
+// 手动使用update 函数时 也会被调用
+void MainWindow::paintEvent(QPaintEvent *event)
+{
+    qDebug()<<"paintEvent() 被调用";
+    QPainter painter(this);// 定义一个画笔, 这个画笔可以画出很多种形状, 图片
+    // 把背景图片显示到控件上
+    if(!fileName.isEmpty())
+    {
+        QPixmap map(fileName); // 定义一个pixmap对象
+        painter.drawPixmap(QPoint(0,0),map);// 把图片绘制到窗体中
+    }
+}
+```
+- drawLine() 绘画出一个直线
+- drawEllipse() 绘画出一个同心圆
+- QPen 用来定义一个画笔, 笔的颜色, 笔的宽度, 是否抗锯齿
+```c
+// 实现绘画事件 paintEvent
+// 在窗口被显示的时候调用一次 , 窗口发生改变时都会被调用
+// 手动使用update 函数时 也会被调用
+void MainWindow::paintEvent(QPaintEvent *event)
+{
+    qDebug()<<"paintEvent() 被调用";
+    QPainter painter(this);// 定义一个画笔, 这个画笔可以画出很多种形状, 图片
+    if(drawLineFlag) // 为真时表示要画线
+    {
+        if(linep != nullptr)
+        {
+            QPen pen ;
+            pen.setColor(Qt::red); // 设置画笔的颜色
+            pen.setWidth(5) ; // 设置笔的宽度, 以像素为单位
+            painter.setPen(pen) ; // 安装一个画笔
+            painter.drawLine(linep->p1(),linep->p2());
+            painter.drawEllipse(linep->p1(),4,4); // 画出线的弧度, 同心的圆
+            painter.drawEllipse(linep->p2(),4,4); // 画出线的弧度, 同心的圆
+        }
+    }
+}
+```
+- drawPolygon() 绘画多边形
+- setRenderHint() 设置画笔是否抗锯齿
+```c
+// 实现绘画事件 paintEvent
+// 在窗口被显示的时候调用一次 , 窗口发生改变时都会被调用
+// 手动使用update 函数时 也会被调用
+void MainWindow::paintEvent(QPaintEvent *event)
+{
+    qDebug()<<"paintEvent() 被调用";
+    QPainter painter(this);// 定义一个画笔, 这个画笔可以画出很多种形状, 图片
+    if(drawPolygonFlag) // 为真时表示要画多边形
+    {
+        QPen pen ;
+        pen.setColor(Qt::yellow); // 设置画笔的颜色
+        pen.setWidth(5) ; // 设置笔的宽度, 以像素为单位
+        painter.setPen(pen) ; // 安装一个画笔
+        painter.setRenderHint(QPainter::Antialiasing); // 边缘抗锯齿 在绘制各种形状时 可以设置抗锯齿
+        // 先构建一个多边形 QPolygon
+        QPolygon pol(Polygons) ; // 用Polygons 这个容器, 去构建一个pol
+        painter.drawPolygon(pol); // 画多边形
+        for(int i=0;i<Polygons.size();i++)
+        {
+            painter.drawEllipse(Polygons.at(i),4,4); // 画出线的弧度, 同心的圆
+        }
+    }
+}
+```
+
+#### 判断单击的点是否是指定的点
+- 可以使用event指针获取鼠标单击点的位置
+- 可以使用绝对值误差的方式来判断是否选中指定的点
+- setCursor() 用来设置光标形状，来区分点是否被选中
+```c
+v
+oid MainWindow::mousePressEvent(QMouseEvent *event) // 鼠标按下事件
+{
+    if(event->button() == Qt::LeftButton)
+    { // 如果是鼠标左键按下
+    
+        qDebug()<<"鼠标左键被按下";
+        qDebug()<<"鼠标被单击:"<<event->pos(); // 打印鼠标的位置
+        if(linep !=nullptr)
+        {
+            // 鼠标点击的位置 和 线的坐标位置保持误差在10以内 我们认为就是点击了这个点
+            if( (abs( event->pos().x() - linep->p1().x()) < 10 ) &&
+                    (abs( event->pos().y() - linep->p1().y()) < 10 ) )
+            {
+                qDebug()<<"p1 被选中";
+                linePointIndex = 1;
+                setCursor(Qt::CrossCursor); // 设置鼠标为十字光标
+            } 
+            else if( (abs( event->pos().x() - linep->p2().x()) < 10 ) &&
+                    (abs( event->pos().y() - linep->p2().y()) < 10 ) )
+            {
+                qDebug()<<"p2 被选中";
+                linePointIndex = 2;
+                setCursor(Qt::CrossCursor); // 设置鼠标为十字光标
+            }
+            else
+            {
+                linePointIndex = 0 ;
+                setCursor(Qt::ArrowCursor); // 正常鼠标样式
+            }
+        } 
+        // 鼠标点击的位置 和 多边形的坐标位置保持误差在10以内 我们认为就是点击了这个点
+        for(int i=0;i<Polygons.count();i++)
+        {
+            if( (abs( event->pos().x() - Polygons.at(i).x()) < 10 ) &&
+            (abs( event->pos().y() - Polygons.at(i).y()) < 10 ) )
+            {
+                polygonPointIndex = i+1; // 记录哪一个点被选中
+                qDebug()<<"Polygons 被选中:"<<polygonPointIndex;
+                //linePointIndex = 2; =
+                setCursor(Qt::CrossCursor); // 设置鼠标为十字光标
+                break; // 选中点后 , 退出循环
+            } 
+            else
+            {
+                polygonPointIndex = 0 ;
+                setCursor(Qt::ArrowCursor); // 正常鼠标样式
+            }
+        }
+    }
+}
+```
+
+#### 直线或多边形拖拽功能实现
+- 实时记录鼠标在单击时移动的位置， 并用最新的位置替换被选中的坐标点
+- 线的实现使用setP1和setP2来进行更新
+- 多边形的话使用replace函数来进行更新
+- 更新后手动使用update()来产生一次绘画事件
+```c
+// 可设置点击后移动, 认为是鼠标移动
+// 也可以实时的捕捉
+void MainWindow::mouseMoveEvent(QMouseEvent *event) // 鼠标移动事件
+{
+    qDebug()<<"鼠标移动";
+    // 是判断鼠标在单击的过程中移动了鼠标
+    if(event->buttons() & Qt::LeftButton)
+    { // 这里必须使用buttons()
+        drawLineFlag = true;// 设置线绘制标志位 , 会对线进行重新绘制
+        
+        if(linePointIndex ==1) // 表示选中的p1点
+        {
+            linep->setP1(QPoint(event->pos())); // 使用当前鼠标的坐标来替换线段的点
+            update(); // 产生一次绘图事件
+        }
+        else if(linePointIndex ==2) // 表示选中的p1点
+        {
+            linep->setP2(QPoint(event->pos())); // 使用当前鼠标的坐标来替换线段的点
+            update(); // 产生一次绘图事件
+        } 
+
+        drawPolygonFlag = true;// 设置绘制多边形标志位 , 会对多边形进行重新绘制
+        if(polygonPointIndex > 0) // 表示多边形有点被选中
+        {
+            qDebug()<<"mouseMoveEvent:polygonPointIndex="<<polygonPointIndex;
+            Polygons.replace(polygonPointIndex-1,QPoint(event->pos()));
+            update(); // 产生一次绘图事件
+        }
+    }
+}
+```
+
+#### 子窗体的实现
+- qt工程中新建一个设计师界面类
+- 添加这个类后， 在需要时可以使用 new 去手动创建这个窗体并显示
+- 同时设置信号处理函数
+```c
+void MainWindow::on_action_polygon_triggered()
+{
+    if(polygonP != nullptr)
+    {
+        delete polygonP ;// 释放内存
+    } 
+    //要做一个弹窗, 在qt 中需要一个子窗体时, 需要单独创建一个窗体类
+    polygonP = new polygon; // 这里父窗体不用this,使用了this以后, 会出现内嵌的情况, 让这个窗体独立显示
+    // polygon 设置信号处理函数
+    connect(polygonP,&polygon::add_newpolygon,this,&MainWindow::add_newpolygon_slot);
+    polygonP->show() ;// 显示控件 , 让子窗体显示
+}
+```
+
+#### emit发送自定义信号
+- 在程序中可以自定义一个信号
+```c
+//polygon.h
+class polygon : public QWidget
+{
+    Q_OBJECT
+    public:
+    explicit polygon(QWidget *parent = nullptr);
+    ~polygon();
+    qint32 getPolygonPoints();
+    signals:
+    void add_newpolygon(); // 自定义信号
+    private slots:
+    void on_pushButton_ok_clicked();
+    void on_pushButton_cancel_clicked();
+    private:
+    Ui::polygon *ui;
+};
+```
+- 使用emit来发送指定的信号
+```c
+void polygon::on_pushButton_ok_clicked()
+{
+    // 发送一个信号
+    emit add_newpolygon();
+    qDebug()<<"add_newpolygon() 信号被发送";
+    this->hide();// 隐藏窗口
+}
+```
+
+#### 访问子窗体控件中的内容方法
+- 应为我们不能通过指针的形式方位子窗体的ui ， 也就不能直接访问子窗体控件中的内容
+- 实现方法就是封装共有接口（public）， 然后去调用
+```c
+class polygon : public QWidget
+{
+    Q_OBJECT
+    public:
+    explicit polygon(QWidget *parent = nullptr);
+    ~polygon();
+    qint32 getPolygonPoints();
+    signals:
+    void add_newpolygon(); // 实现一个共有接口, 可以使用对象或指针进行访问
+    private slots:
+    void on_pushButton_ok_clicked();
+    void on_pushButton_cancel_clicked();
+    private:
+    Ui::polygon *ui;
+};
+
+qint32 polygon::getPolygonPoints()
+{
+    return ui->comboBox->currentIndex()+3;
+}
+```
+- 通过指针访问子窗体控件的内容
+```c
+void MainWindow::add_newpolygon_slot()
+{
+    qDebug()<<"add_newpolygon_slot被调用";
+    if(set.contains("x1")) // 可以在config.ini 进行搜索 , 找到和没找到两种
+    { 
+
+    } 
+    else // 如果没有就创建 这些值
+    {
+        // 获取子窗体多边形的吧边数
+        if(polygonP != nullptr)
+        {
+            qint32 count = polygonP->getPolygonPoints(); // 获取要画多边形的点数
+        }
+    }
+}
+```
+
+#### QSettings用来保存用户的设置
+- QSettings 可以保存用户的设置， 同样也可以加载用户的设置
+- 没有这个配置文件会自动创建， 有这个文件自动打开
+- beginGroup 函数用来定位一个组， 所有的操作都在这个组内完成
+- endGroup 函数用来结束一个组
+- contains 函数用来判断组内是否有我们要想的内容，如果没有就创建， 如果有就加载
+- value 读取组名内的key值， 这个类似于c++的map
+- setValue 把程序的信息写入到文件内
+```c
+void MainWindow::on_action_line_triggered()
+{
+    // 设置一个标志位 , 实现要在paintEvent函数内实现, 在这里只需要设置update即可
+    drawLineFlag = true ; // 表示可以画线
+    update(); // 更新绘画 , 调用paintEvent函数
+    // 如果系统已经保存了 line的信息, 则需要自动加载线的信息
+    // 如果没有保存, 则使用默认的线信息
+    // 创建一个config.ini文件 , 文件不存在则创建, 文件存在则打开
+    QSettings set("config.ini",QSettings::IniFormat);
+    set.beginGroup("Line1");// 开始的组
+    //如果Line1有x1 这个key , 说明我们配置文件中已经保存了线 , 此时就需要我们加载即可
+    if(set.contains("x1")) // 可以在config.ini 进行搜索 , 找到和没找到两种
+    {
+        qint32 x1 = set.value("x1").toInt();
+        qint32 y1 = set.value("y1").toInt();
+        qint32 x2 = set.value("x2").toInt();
+        qint32 y2 = set.value("y2").toInt();
+        linep = new QLine(x1,y1,x2,y2);
+    } 
+    else // 如果没有就创建 这些值
+    {
+        qint32 x1 = 100;
+        qint32 y1 = 100;
+        qint32 x2 = 200;
+        qint32 y2 = 200;
+        linep = new QLine(x1,y1,x2,y2);
+        set.setValue("x1",x1);
+        set.setValue("y1",y1);
+        set.setValue("x2",x2);
+        set.setValue("y2",y2);
+    } 
+    set.endGroup();
+}
+```
+
