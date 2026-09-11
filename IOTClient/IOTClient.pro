@@ -1,6 +1,7 @@
 QT += widgets
 QT += serialport
 QT += network mqtt
+QT += concurrent
 
 CONFIG += c++17
 
@@ -38,3 +39,7 @@ msvc {
     QMAKE_CXXFLAGS += /utf-8
     QMAKE_CFLAGS   += /utf-8
 }
+
+INCLUDEPATH += $$PWD
+INCLUDEPATH += $$PWD/CandleApiDriver
+include($$PWD/CandleApiDriver/CandleApiDriver.pri)

@@ -3,7 +3,7 @@
 
 MQTT::MQTT(QWidget *parent)
     : QWidget(parent)
-    , ui(new Ui::MQTT)
+    , ui(new Ui::MQTT),set("config.ini",QSettings::IniFormat)
 {
     ui->setupUi(this);
     initUi();
@@ -148,11 +148,32 @@ void MQTT::initUi()
                                      );
     ui->pushButton_pw->setFont(font);
 
-    ui->comboBox_server->addItem("broker.emqx.io");
-    ui->comboBox_upload->addItem("STM32/UpLoad/8708603349498271066CFF52");
-    ui->comboBox_download->addItem("STM32/DownLoad/8708603349498271066CFF52");
 
+    //如果MQTT有server 这个key , 说明我们配置文件中已经保存了server , 此时就需要我们加载即可
+    if(set.contains("MQTT/server")) // 可以在config.ini 进行搜索 , 找到和没找到两种
+    {
+        QString mqttserver = set.value("MQTT/server").toString();
+        QString upload = set.value("MQTT/UpLoad").toString();
+        QString dowmload = set.value("MQTT/DownLoad").toString();
 
+        ui->comboBox_server->addItem(mqttserver);
+        ui->comboBox_upload->addItem(upload);
+        ui->comboBox_download->addItem(dowmload);
+    }
+    else // 如果没有就创建 这些值
+    {
+        QString mqttserver = "broker.emqx.io";
+        QString upload = "STM32/UpLoad/8708603349498271066CFF52";
+        QString dowmload = "STM32/DownLoad/8708603349498271066CFF52";
+
+        set.setValue("MQTT/server",mqttserver);
+        set.setValue("MQTT/UpLoad",upload);
+        set.setValue("MQTT/DownLoad",dowmload);
+
+        ui->comboBox_server->addItem(mqttserver);
+        ui->comboBox_upload->addItem(upload);
+        ui->comboBox_download->addItem(dowmload);
+    }
 }
 
 void MQTT::mqtt_stateChanged_slot(QMqttClient::ClientState state)
@@ -420,5 +441,23 @@ void MQTT::on_pushButton_relay_clicked(bool checked)
     {
         mqttclient->publish(ui->comboBox_download->currentText(), cmdArray);//发送数据
     }
+}
+
+
+void MQTT::on_comboBox_upload_currentTextChanged(const QString &arg1)
+{
+    set.setValue("MQTT/UpLoad",ui->comboBox_upload->currentText());
+}
+
+
+void MQTT::on_comboBox_download_currentTextChanged(const QString &arg1)
+{
+    set.setValue("MQTT/DownLoad",ui->comboBox_download->currentText());
+}
+
+
+void MQTT::on_comboBox_server_currentTextChanged(const QString &arg1)
+{
+    set.setValue("MQTT/server",ui->comboBox_server->currentText());
 }
 

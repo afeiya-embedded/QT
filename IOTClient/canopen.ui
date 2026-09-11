@@ -24,12 +24,13 @@
    </property>
    <property name="font">
     <font>
+     <family>Microsoft YaHei</family>
      <pointsize>10</pointsize>
      <bold>true</bold>
     </font>
    </property>
    <property name="text">
-    <string>刷新串口</string>
+    <string>刷新设备</string>
    </property>
   </widget>
   <widget class="QPushButton" name="pushButton_beep">
@@ -74,14 +75,20 @@
     <string/>
    </property>
   </widget>
-  <widget class="QComboBox" name="comboBox">
+  <widget class="QComboBox" name="comboBox_can">
    <property name="geometry">
     <rect>
-     <x>140</x>
+     <x>120</x>
      <y>50</y>
-     <width>471</width>
+     <width>491</width>
      <height>40</height>
     </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Microsoft YaHei</family>
+     <pointsize>12</pointsize>
+    </font>
    </property>
   </widget>
   <widget class="QPushButton" name="pushButton_temp">
@@ -137,12 +144,13 @@
    </property>
    <property name="font">
     <font>
+     <family>Microsoft YaHei</family>
      <pointsize>10</pointsize>
      <bold>true</bold>
     </font>
    </property>
    <property name="text">
-    <string>打开串口</string>
+    <string>打开设备</string>
    </property>
    <property name="checkable">
     <bool>true</bool>
@@ -236,7 +244,7 @@
     </font>
    </property>
    <property name="text">
-    <string>串口号：</string>
+    <string>CAN：</string>
    </property>
   </widget>
  </widget>

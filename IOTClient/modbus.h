@@ -12,6 +12,7 @@
 #include <QMutexLocker>
 
 
+
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class Widget;
@@ -30,6 +31,9 @@ public:
 
     bool cmdReadBytes(quint8 readData[],quint8 n);
     bool cmdStatus(quint8 src_cmd[],quint8 n);
+
+    // //声明一个父类虚函数 使用子类替换父类同名函数
+    // void closeEvent(QCloseEvent *event);
 
 private slots:
 
@@ -55,5 +59,6 @@ private:
     quint8  cmdConBit = 0;      //硬件控制位
     QTimer *timer = nullptr;    //定时器指针 定时2s
     QMutex mutex;               //创建互斥锁
+
 };
 #endif // MODBUS_H

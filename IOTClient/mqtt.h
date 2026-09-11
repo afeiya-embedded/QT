@@ -5,6 +5,7 @@
 #include <QtMqtt/QMqttClient>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QSettings>
 
 namespace Ui {
 class MQTT;
@@ -35,9 +36,16 @@ private slots:
 
     void on_pushButton_relay_clicked(bool checked);
 
+    void on_comboBox_upload_currentTextChanged(const QString &arg1);
+
+    void on_comboBox_download_currentTextChanged(const QString &arg1);
+
+    void on_comboBox_server_currentTextChanged(const QString &arg1);
+
 private:
     Ui::MQTT *ui;
     QMqttClient *mqttclient = nullptr;//mqtt客户端
+    QSettings set;
 };
 
 #endif // MQTT_H
