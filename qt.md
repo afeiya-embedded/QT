@@ -1615,3 +1615,9 @@ void Widget::convertStringToHex(const QString &str, QByteArray &byteData)
     }
 ```
 
+### 数据库MYSQL
+- 更改源码 进行mysql驱动编译
+
+### 静态编译MinGW
+#### 在默认情况下，用QtCreator编译程序时，使用的是动态编译。编译好的程序在运行时需要另外加上相应的Qt库文件，一大堆dll文件。如果想将生成的程序连同所需要的库一起完整地打包成一个可执行程序，那就需要使用静态编译 Qt官方不提供静态编译好的安装包，所以需要我们在自己的电脑上静态编译。而且exe文件会比动态编译的要小上很多
+
