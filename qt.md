@@ -1305,4 +1305,249 @@ void MainWindow::on_action_line_triggered()
     set.endGroup();
 }
 ```
+---
 
+### 网络调试助手NetAssist
+
+#### QUIWidget
+```c
+// 设置无边框窗体
+QUIWidget qui;
+
+//main.cpp
+// 设置无边框窗体
+QUIWidget qui;
+qui.setMainWidget(&w);
+
+//quiwidget.h
+class QUIWidget : public QDialog
+{
+    Q_OBJECT
+    ...
+    private:
+    ...
+    QWidget *mainWidget; //主窗体对象
+};
+
+//quiwidget.cpp
+void QUIWidget::initForm()
+{
+    ...
+    mainWidget = 0;
+    ...
+} 
+void QUIWidget::setMainWidget(QWidget *mainWidget)
+{
+    //一个QUI窗体对象只能设置一个主窗体
+    // 这里通过检查this->mainWidget是否为0（nullptr） 来确定是否已经设置了主窗口部件。
+    // 如果还没有设置主窗口部件， 就执行后续的添加和调整操作。
+    // 这保证了每个QUIWidget对象最多只能有一个主窗口部件
+    if (this->mainWidget == 0) {
+        //将子窗体添加到布局
+        this->widget->layout()->addWidget(mainWidget);
+        //自动设置大小
+        resize(mainWidget->width(), mainWidget->height() + this->widgetTitle->height());
+        this->mainWidget = mainWidget;
+    }
+}
+
+//QUIWidget的构造函数
+QUIWidget::QUIWidget(QWidget *parent) : QDialog(parent)
+{
+    this->initControl();
+    this->initForm();
+}
+
+// 这个函数构建了一个具有标题栏（包含图标、 标题、 菜单按钮、 最小化、 最大化和关闭按钮） 和
+// 内容显示区域的窗口界面的基本框架， 并建立了部分按钮的事件处理连接。
+void QUIWidget::initControl()
+{
+    this->setObjectName(QString::fromUtf8("QUIWidget"));
+    this->resize(900, 750);
+    horizontalLayout4->addWidget(labTitle);
+    verticalLayout2->addWidget(widget);
+    verticalLayout1->addWidget(widgetMain);
+    connect(this->btnMenu_Min, SIGNAL(clicked(bool)), this, SLOT(on_btnMenu_Min_clicked()));
+    connect(this->btnMenu_Max, SIGNAL(clicked(bool)), this, SLOT(on_btnMenu_Max_clicked()));
+    connect(this->btnMenu_Close, SIGNAL(clicked(bool)), this, SLOT(on_btnMenu_Close_clicked()));
+} 
+
+void QUIWidget::initForm()
+{
+    //设置图形字体
+    setIcon(QUIWidget::Lab_Ico, QUIConfig::IconMain, 11);
+    setIcon(QUIWidget::BtnMenu, QUIConfig::IconMenu);
+    setIcon(QUIWidget::BtnMenu_Min, QUIConfig::IconMin);
+    setIcon(QUIWidget::BtnMenu_Normal, QUIConfig::IconNormal);
+    setIcon(QUIWidget::BtnMenu_Close, QUIConfig::IconClose);
+    this->max = false;
+    this->location = this->geometry();
+    this->setProperty("form", true);
+    this->widgetTitle->setProperty("form", "title");
+    this->setWindowFlags((Qt::FramelessWindowHint | Qt::WindowSystemMenuHint |
+    Qt::WindowMinMaxButtonsHint));
+    //设置标题及对齐方式
+    title = "QUI Demo";
+    alignment = Qt::AlignLeft | Qt::AlignVCenter;
+    minHide = false;
+    mainWidget = 0;
+    setVisible(QUIWidget::BtnMenu, false);
+    //绑定事件过滤器监听鼠标移动
+    this->installEventFilter(this);
+    this->widgetTitle->installEventFilter(this);
+    //添加换肤菜单
+    QStringList name;
+    name << "银色" << "灰色" << "黑色"<< "PS黑色";
+
+    foreach (QString str, name) 
+    {
+        QAction *action = new QAction(str, this);
+        this->btnMenu->addAction(action);
+        connect(action, SIGNAL(triggered(bool)), this, SLOT(changeStyle()));
+    }
+}
+```
+
+#### QHostInfo
+- QHostInfo是Qt框架中提供的网络主机信息查询类。它可以用于获取主机的IP地址、主机名、域名等相关信息 使用QHostInfo类，你可以进行如下操作：获取主机名和IP地址：通过调用 hostName() 和 addresses() 方法，可以获取到主机的名称和IP地址列表
+```c
+// 获取主机的ip地址
+// hostname 就计算机名称
+
+    qDebug() << "hostname:" << QHostInfo::localHostName() ; // 获取计算机名
+    // 获取主机名的目的是为了获取主机的ip地址， 可以使用方法 fromName获取ip
+    // fromName 函数实现了， 根据主机名获取主机的IP地址
+    // fromName 返回值是 QHostInfo， 一个主机可以有很多个ip地址
+    // 在使用 address 方法， 可以获取主机名的所有ip地址
+    QHostInfo info = QHostInfo::fromName(QHostInfo::localHostName()) ; // 获取很多个地址对象
+    foreach (QHostAddress addr, info.addresses()) 
+    {
+        qDebug() <<"addr.protocol() = " << addr.protocol() ;
+        if(addr.protocol() == QAbstractSocket::IPv4Protocol) // 只获取IPV4协议的ip
+        {
+            qDebug() << "addr:" << addr;
+            ui->comboBox_ip->addItem(addr.toString());
+        }
+    }
+```
+
+#### QUdpSocket
+- QUdpSocket是Qt框架提供的用于进行UDP通信的套接字类。它可以用于发送和接收UDP数据报，支持单播、广播和组播等多种方式。使用QUdpSocket类，你可以进行如下操作：
+- 1. 绑定端口：通过调用 bind() 方法，绑定本地IP地址和端口号，以便接收UDP数据报。
+- 2. 发送数据：通过调用 writeDatagram() 方法，向指定的IP地址和端口号发送UDP数据报。也可以使用 write() 方法发送数据，但是需要自己指定目标地址和端口号。
+- 3. 接收数据：通过调用 readyRead() 信号，可以接收到已经到达的UDP数据报。使用 readDatagram() 方法可以读取UDP数据报的内容。
+- 4. 设置广播和组播：通过 setBroadcast() 和 joinMulticastGroup() 方法，可以设置UDP套接字为广播或组播模式
+```c
+// 创建udp socket
+udpSocket = new QUdpSocket(this);
+quint16 port = ui->comboBox_port->currentText().toUShort() ;
+QHostAddress addr(ui->comboBox_ip->currentText());
+udpSocket->bind(addr,port);
+```
+
+#### ascii字符串转16进制字符串
+```c
+// 把字符串转成16进制字符串
+// str1 是ascii的字符串
+// str2 是hex 的字符串
+void Widget::convertAsciiToHex(const QString &str1, QString &str2)
+{
+    str2 = "";
+    for(int i=0;i<str1.size();i++)
+    {
+        str2 += QString::asprintf("%02X",str1.at(i).toLatin1());
+        if(i < (str1.size()-1) ) // 最后一个字符不加空格
+        {
+            str2 += " ";
+        }
+    }
+}
+```
+
+#### 16进制的字符串转成ascii的字符串
+```c
+// 把16进制的字符串 转成 ascii的字符串
+// str1 是hex 的字符串
+// str2 是ascii 的字符串
+void Widget::convertHexToAscii(const QString &str1, QString &str2)
+{
+`    str2 = "" ;
+    QStringList list = str1.split(" ") ; // 使用空格进行拆分
+    qDebug()<<"list="<<list ;
+
+    for(int i=0;i<list.size();i++)
+    {
+        qDebug()<<"char="<< QString::asprintf("%c",list.at(i).toInt() ) ;
+        qDebug()<<"list.at(i)="<<list.at(i) ;
+        bool ok ;
+        qDebug()<<"list.at(i).toint="<<list.at(i).toInt(&ok,16) ;
+        str2 += QString::asprintf("%c",list.at(i).toInt(&ok,16) ) ;
+    } 
+    
+    qDebug()<<"str2="<<str2 ;
+} 
+
+char convertCharToHex(char ch)
+{
+    if((ch >= '0') && (ch <= '9'))
+    return ch-0x30;
+    else if((ch >= 'A') && (ch <= 'F'))
+    return ch-'A'+10;
+    else if((ch >= 'a') && (ch <= 'f'))
+    return ch-'a'+10;
+    else return (-1);`
+}
+
+// 把16进制的字符串转成16进制的QByteArray
+void Widget::convertStringToHex(const QString &str, QByteArray &byteData)
+{
+    int hexdata,lowhexdata;
+    int hexdatalen = 0;
+    int len = str.length();
+    byteData.resize(len/2);
+    char lstr,hstr;
+    for(int i=0; i<len; )
+    {
+        //char lstr,
+        hstr=str[i].toLatin1();
+        if(hstr == ' ')
+        {
+            i++;
+            continue;
+        } 
+
+        i++;
+        if(i >= len)
+        break;
+
+        lstr = str[i].toLatin1();
+        hexdata = convertCharToHex(hstr);
+        lowhexdata = convertCharToHex(lstr);
+        if((hexdata == 16) || (lowhexdata == 16))
+            break;
+        else
+            hexdata = hexdata*16+lowhexdata;
+            i++;
+        byteData[hexdatalen] = (char)hexdata;
+        hexdatalen++;
+    } 
+    byteData.resize(hexdatalen);
+}
+```
+
+#### 加载皮肤
+```c
+//在文本中加载样式表
+//QFile file(":/qss/silvery.css");
+    QFile file(":/qss/psblack.css");
+    if (file.open(QFile::ReadOnly)) 
+    {
+        QString qss = QLatin1String(file.readAll());
+        QString paletteColor = qss.mid(20, 7);
+        qApp->setPalette(QPalette(QColor(paletteColor)));
+        qApp->setStyleSheet(qss);
+        file.close();
+    }
+```
+
+### 数据库SQLite
