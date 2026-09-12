@@ -1551,3 +1551,67 @@ void Widget::convertStringToHex(const QString &str, QByteArray &byteData)
 ```
 
 ### 数据库SQLite
+1. QSqlDatabase 类是 Qt 框架中用于数据库连接的关键类。它提供了一种与不同数据库管理系统（如 MySQL、 SQLite等）进行交互的接口。通过这个类，开发者可以方便地建立数据库连接、执行 SQL 语句以及管理事务等操作。
+2. 建立数据库连接
+- 连接方式
+    - 首先，需要使用 QSqlDatabase::addDatabase() 静态方法来创建一个数据库连接对象。这个方法需要传入一个数据
+库驱动类型作为参数，例如，对于 SQLite 数据库，可以使用 QSqlDatabase::addDatabase("QSQLITE") 。
+- 设置数据库参数
+    - 在创建连接对象后，需要设置数据库的相关参数。以 SQLite 为例，需要使用 setDatabaseName() 方法来指定数据库
+文件的名称。如果是连接到远程的 MySQL 数据库，还需要设置主机名（ setHostName() ）、用户名
+（ setUserName() ）、密码（ setPassword() ）等参数。
+- 打开连接   
+    - 最后，使用 open() 方法来打开数据库连接。如果连接成功，这个方法返回 true ；否则返回 false 
+
+```c
+    QStringList lists = QSqlDatabase::drivers() ;
+    foreach (QString l, lists) 
+    {
+        qDebug()<<"支持的数据库驱动为:" << l ;
+    } 
+    db = QSqlDatabase::addDatabase("QSQLITE"); // 设置要打开数据库的类型， 这个数据库类型是SQlite3
+    db.setDatabaseName("my.db"); // 要打开数据库的名称
+    bool ok = db.open() ; // 如果不存在则创建， 存在车打开
+    if(!ok) // 打开数据库失败
+    {
+        QMessageBox::warning(this,tr("SQLite3"),tr("数据库打开失败"));
+    }
+```
+
+#### 执行数据库语句
+- 成功建立连接后，可以通过 QSqlQuery 类来执行 SQL 语句。首先需要创建一个 QSqlQuery 对象，并将之前创建的 QSqlDatabase对象作为参数传递给它（如果没有传递， QSqlQuery 会使用默认的数据库连接）。例如： QSqlQuery query(db); 
+- 执行 SQL 语句 使用 query.exec() 方法来执行 SQL 语句
+```c
+// 查询数据库所有的记录
+// 执行一个sql语句， 使用QSqlQuery
+    QString sql = "select * from student;" ;
+    QSqlQuery query ; //创建一个执行sql语句的对象
+    bool ok = query.exec(sql) ; // 执行数据库语句
+    if(!ok) // 执行sql语句失败
+    {
+        // 获取错误信息
+        qDebug() << query.lastError().text() ;
+        QMessageBox::critical(this,tr("创建表错误"),query.lastError().text());
+        return ;
+    }
+```
+- 创建数据的表
+```c
+// 创建数据库的表
+// 执行一个sql语句， 使用QSqlQuery
+    QString sql = "create table student(number int primary key,name char,gender char,age int,score float);" ;
+    QSqlQuery query ; //创建一个执行sql语句的对象
+    bool ok = query.exec(sql) ; // 执行数据库语句
+    if(!ok) // 执行sql语句失败
+    {
+        // 获取错误信息
+        qDebug() << query.lastError().text() ;
+        QMessageBox::critical(this,tr("创建表错误"),query.lastError().text());
+        return ;
+    } 
+    else // 创建表成功
+    {
+        QMessageBox::information(this,tr("创建数据库成功"),tr("创建student表成功"));
+    }
+```
+
